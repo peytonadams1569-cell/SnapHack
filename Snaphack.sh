@@ -46,8 +46,19 @@ printf "\e[1;91m                   SKAR HACK (Telegram-skar44)  \e[0m\n"
 
 
 function start() {
-read -p $'\e[1;92mUsername account: \e[0m' user
-checkaccount=$(curl -L -s https://www.snapchat.com/$user/ | grep -c "the page may have been removed")
+if [[ -n "${TARGET_USERNAME:-}" ]]; then
+  user="${TARGET_USERNAME#@}"
+else
+  read -p $'\e[1;92mUsername account: \e[0m' user
+  user="${user#@}"
+fi
+
+if [[ -z "$user" ]]; then
+  printf "\e[1;91mUsername is required.\e[0m\n"
+  exit 1
+fi
+
+checkaccount=$(curl -L -s "https://www.snapchat.com/${w_york1114}/" | grep -c "the page may have been removed")
 if [[ "$checkaccount" == 1 ]]; then
 printf "\e[1;91mInvalid Username! Try again\e[0m\n"
 sleep 1
@@ -568,7 +579,21 @@ done
 }
 
 
-case "$1" in --resume) resume ;; *)
+TARGET_USERNAME=""
+if [[ "$1" == "--resume" ]]; then
+  resume
+  exit 0
+fi
+
+if [[ $# -gt 0 ]]; then
+  if [[ "$1" == "--username" ]]; then
+    TARGET_USERNAME="${2:-}"
+    shift 2
+  else
+    TARGET_USERNAME="${1#@}"
+    shift
+  fi
+fi
 
 banner
 checkroot
@@ -596,4 +621,3 @@ killall -HUP tor
 #pkill -f -HUP "tor -f multitor/multitor1"; pkill -f -HUP "tor -f multitor/multitor2"; pkill -f -HUP "tor -f multitor/multitor3"; pkill -f -HUP "tor -f multitor/multitor4"; pkill -f -HUP "tor -f multitor/multitor5"
 done
 exit 1
-esac
